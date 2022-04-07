@@ -1,11 +1,13 @@
 use iced::button;
-use iced::{Button, Column, Row, Text, Color, Background, Vector, Space};
+use iced::text_input;
+use iced::{Button, Column, Row, Text, Color, Background, Vector, Space, TextInput};
 use iced::{executor, Application, Clipboard, Command, Element, Settings};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum PressMessage {
     IncrementPressed,
-    DecrementPressed
+    DecrementPressed,
+    InputChanged(String)
 }
 
 pub struct MyButtonStyle;
@@ -27,6 +29,9 @@ impl button::StyleSheet for MyButtonStyle {
 struct Counter {
     // The counter value
     value: i32,
+    // txt value
+    txt: String,
+    input_state: text_input::State,
 
     // The local state of the two buttons
     increment_button: button::State,
@@ -74,6 +79,14 @@ impl Counter {
                             .on_press(PressMessage::DecrementPressed)
                             .style(MyButtonStyle),
                     )
+                    .push(
+                        TextInput::new(
+                            &mut self.input_state,
+                            "What needs to be done?",
+                            &self.txt,
+                            PressMessage::InputChanged,
+                        )
+                    )
             )
     }
 
@@ -84,6 +97,9 @@ impl Counter {
            }
            PressMessage::DecrementPressed => {
                self.value -= 1;
+           },
+           PressMessage::InputChanged(val) => {
+               self.txt = val.clone();
            }
        }
    }
@@ -97,6 +113,8 @@ impl Application for Counter {
     fn new(_flags: ()) -> (Self, Command<Self::Message>) {
         (Self{
             value: 0,
+            txt: "".to_string(),
+            input_state: text_input::State::new(),
             increment_button: button::State::new(),
             decrement_button: button::State::new()
         }, Command::none())
